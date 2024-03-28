@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
 	"github.com/paralin/go-dota2"
 	"github.com/paralin/go-dota2/cso"
 	"github.com/paralin/go-dota2/protocol"
@@ -33,13 +35,13 @@ func main() {
 }
 
 func initSteamConnection(handler *handler) {
-	
+
 	// Set steam credentials from the environment
 	details := &steam.LogOnDetails{
 		Username: os.Getenv("BOT_USERNAME"),
 		Password: os.Getenv("BOT_PASSWORD"),
 	}
-	
+
 	// Set actual server list
 	err := steam.InitializeSteamDirectory()
 	if err != nil {
@@ -57,7 +59,7 @@ func initSteamConnection(handler *handler) {
 			log.Println("Connected to steam network, trying to log in...")
 			handler.steamClient.Auth.LogOn(details)
 		case *steam.LoggedOnEvent:
-			log.Println("Successfully logged on to steam")		
+			log.Println("Successfully logged on to steam")
 			// Set account state to online
 			handler.steamClient.Social.SetPersonaState(steamlang.EPersonaState_Online)
 
@@ -68,29 +70,28 @@ func initSteamConnection(handler *handler) {
 			log.Println("Dota 2 client has been initialized")
 			// Try to get a session
 			handler.dotaClient.SayHello()
-			
-			eventCh, _, err := handler.dotaClient.GetCache().SubscribeType(cso.Lobby) 
+
+			eventCh, _, err := handler.dotaClient.GetCache().SubscribeType(cso.Lobby)
 			if err != nil {
 				log.Fatalf("Failed to subscribe to lobby cache: %v", err)
 			}
 
-			lobbyEvent := <- eventCh
+			lobbyEvent := <-eventCh
 			lobby := lobbyEvent.Object.String()
 			log.Printf("Lobby: %v", lobby)
 
 		case steam.FatalErrorEvent:
-			log.Println("Fatal error occurred: ", e.Error()) 
+			log.Println("Fatal error occurred: ", e.Error())
 		}
 	}
 }
-
 
 func initGinServer(handler *handler) {
 	// Start the web server
 	r := gin.Default()
 	// Health check
 	r.GET("/", func(c *gin.Context) {
-		
+
 		c.JSON(200, gin.H{
 			"message": "Hello Dota players!",
 		})
@@ -105,17 +106,17 @@ func initGinServer(handler *handler) {
 		lobbyVisibility := protocol.DOTALobbyVisibility_DOTALobbyVisibility_Public
 
 		// Peruvian Server ID is # 15, choose the server id you prefer...
-		lobbyRegion := uint32(15)
+		lobbyRegion := uint32(10)
 
 		// Captains Mode is # 2
 		gameMode := uint32(2)
 
 		lobbyDetails := &protocol.CMsgPracticeLobbySetDetails{
-			GameName:            proto.String("Lobby Test name"),
-			Visibility: 		 &lobbyVisibility,
-			PassKey: 		   	 proto.String("lobbytest"),
-			ServerRegion:  		 &lobbyRegion,
-			GameMode: 			 &gameMode,
+			GameName:     proto.String("www.dota2brasil.com.br"),
+			Visibility:   &lobbyVisibility,
+			PassKey:      proto.String("dota2brasil"),
+			ServerRegion: &lobbyRegion,
+			GameMode:     &gameMode,
 		}
 
 		handler.dotaClient.CreateLobby(lobbyDetails)
@@ -136,16 +137,26 @@ func initGinServer(handler *handler) {
 
 	// Invite a player to the lobby
 	r.POST("/invite/:steamId", func(c *gin.Context) {
-		id := c.Param("steamId")
-		log.Printf("Inviting player with steamId: %v", id)
-		// uintId, err := strconv.ParseUint(id, 10, 64)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		uintId := uint32(423084105)
-		handler.dotaClient.InviteLobbyMember(steamId.SteamId(uintId))
+		// Extrai o steamId da URL.
+		steamIdStr := c.Param("steamId")
+		log.Printf("Inviting player with steamId: %v", steamIdStr)
 
-		c.JSON(200, gin.H{
+		// Converte o steamIdStr para um uint64.
+		steamId64, err := strconv.ParseUint(steamIdStr, 10, 64)
+		if err != nil {
+			log.Printf("Error converting steamId to uint64: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SteamID format"})
+			return
+		}
+
+		// Assumindo que você tem uma função adequada para converter uint64 para steamid.SteamId
+		// Isso depende da implementação específica do seu tipo steamid.SteamId.
+		sid := steamId.SteamId(steamId64) // Este é um exemplo; ajuste conforme a sua implementação específica.
+
+		// Chama InviteLobbyMember com o sid correto.
+		handler.dotaClient.InviteLobbyMember(sid)
+
+		c.JSON(http.StatusOK, gin.H{
 			"message": "Player has been invited",
 		})
 	})
@@ -166,6 +177,17 @@ func initGinServer(handler *handler) {
 		})
 	})
 
+	// Convidar um jogador para a party
+	r.POST("/invite-to-party/:steamId", func(c *gin.Context) {
+		steamIdStr := c.Param("steamId")
+		steamId64, err := strconv.ParseUint(steamIdStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SteamID format"})
+			return
+		}
+		handler.dotaClient.InviteToParty(steamId64)
+		c.JSON(http.StatusOK, gin.H{"message": "Player invited to the party"})
+	})
 
 	// Start the web server
 	go func() {

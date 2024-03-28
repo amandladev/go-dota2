@@ -1,11 +1,13 @@
-module example
+module github.com/lpjhelder/go-dota2
 
 go 1.21.1
+
+replace github.com/paralin/go-dota2 => github.com/lpjhelder/go-dota2 v0.0.0-20240328013959-eaff3023426d
 
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/joho/godotenv v1.5.1
-	github.com/paralin/go-dota2 v0.0.0-20230812030130-d63690b89ff0
+	github.com/paralin/go-dota2 v0.0.0-20240119073932-88132dd60eea
 	github.com/paralin/go-steam v0.0.0-20231025185642-e7c8d97e052a
 	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/protobuf v1.32.0
@@ -15,7 +17,6 @@ require (
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

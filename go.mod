@@ -3,7 +3,7 @@ module github.com/paralin/go-dota2
 go 1.21
 
 // note: protobuf is intentionally held at 1.3.x
-replace github.com/golang/protobuf => github.com/aperturerobotics/go-protobuf-1.3.x v0.0.0-20200726220404-fa7f51c52df0 // aperture-1.3.x
+replace github.com/paralin/go-dota2 => github.com/lpjhelder/go-dota2 v0.0.0-20240328013959-eaff3023426d
 
 require (
 	github.com/fatih/camelcase v1.0.0
