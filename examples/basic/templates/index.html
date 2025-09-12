@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dota2Dev</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: url('/images/dota-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+
+        .mainContent {
+            padding: 20px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+            margin: auto;
+            max-width: 900px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #000;
+        }
+
+        .logo img {
+            width: 500px; /* Ajuste este valor conforme necessário */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 300px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #66bb6a;
+        }
+
+        #result {
+            text-align: left;
+            font-size: 16px;
+            padding: 20px;
+        }
+
+        .icon {
+            color: #ffeb3b;
+        }
+
+        .details { 
+            display: none; 
+            text-align: left;
+            margin-top: 5px;
+            background: rgba(50, 50, 50, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .changelog li { 
+            cursor: pointer;
+            list-style: none; 
+        }
+    </style>
+</head>
+<body>
+    <div class="mainContent">
+        <div class="logo">
+            <img src="/images/logo.png" alt="Logo Dota 2">
+        </div>
+        <input type="text" id="matchIdInput" placeholder="Digite o ID da Partida">
+        <button onclick="fetchMatchDetails()">Obter Detalhes da Partida</button>
+        <div id="result"></div>
+        <h2>Gerenciamento de Salas</h2>
+        <button id="createRoomButton" onclick="createRoom()">Criar Sala</button>
+        <button id="deleteAllButton" onclick="deleteAllRooms()">Deletar Todas as Salas</button>
+        <div id="roomsContainer"></div>
+        <h2>Changelog</h2>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const deleteAllButton = document.querySelector('#deleteAllButton');
+                const createRoomButton = document.querySelector('#createRoomButton');
+                const roomsContainer = document.querySelector('#roomsContainer');
+            
+                deleteAllButton.addEventListener('click', deleteAllRooms);
+                createRoomButton.addEventListener('click', createRoom);
+            
+                function fetchRooms() {
+                    // Exemplo: GET request para buscar salas
+                    fetch('https://api.seusite.com/rooms')
+                        .then(response => response.json())
+                        .then(data => {
+                            displayRooms(data);
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar salas:', error);
+                        });
+                }
+            
+                function createRoom() {
+                    // Exemplo: POST request para criar uma sala
+                    fetch('https://api.seusite.com/rooms', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({name: 'Nova Sala', maxSize: 10}) // Personalize conforme a necessidade
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        fetchRooms(); // Atualiza a lista de salas após criar uma nova
+                    })
+                    .catch(error => {
+                        console.error('Erro ao criar sala:', error);
+                    });
+                }
+            
+                function deleteAllRooms() {
+                    // Exemplo: DELETE request para deletar todas as salas
+                    fetch('https://api.seusite.com/rooms', {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            roomsContainer.innerHTML = ''; // Limpa a lista de salas
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao deletar salas:', error);
+                    });
+                }
+            
+                function displayRooms(rooms) {
+                    roomsContainer.innerHTML = ''; // Limpa o contêiner atual
+                    rooms.forEach(room => {
+                        const roomElement = document.createElement('div');
+                        roomElement.textContent = `Sala: ${room.name} - Capacidade: ${room.maxSize}`;
+                        roomsContainer.appendChild(roomElement);
+                    });
+                }
+            
+                fetchRooms(); // Carrega as salas inicialmente
+            });
+            </script>
+            
+        <ul class="changelog">
+            <li onclick="toggleDetails('v1_5_0')">[1.5.0] - 2024-05-05</li>
+            <div id="v1_5_0" class="details">
+                Adicionado: Tratamento de erros e logs aprimorado para fornecer feedback mais detalhado em caso de falhas.<br>
+                Adicionado: Refatoração do código para conexão com Steam, incluindo tratamento de erros e garantindo que a função seja usada efetivamente.
+            </div>
+            <li onclick="toggleDetails('v1_4_0')">[1.4.0] - 2024-05-03</li>
+            <div id="v1_4_0" class="details">
+                Corrigido: Reestruturação do código para melhorar a organização e separação de responsabilidades entre a inicialização do servidor e configuração dos clientes Steam e Dota2.<br>
+                Adicionado: Melhorias na segurança, incluindo o uso de gin.Logger() e gin.Recovery() para um melhor manuseio de erros e registros de logs.
+            </div>
+            <li onclick="toggleDetails('v1_3_0')">[1.3.0] - 2024-05-01</li>
+            <div id="v1_3_0" class="details">
+                Corrigido: Implementação e uso global do errorHandlingMiddleware para capturar e responder a falhas de forma mais eficaz.<br>
+                Modificado: Ajustes no CORS para aumentar a segurança, incluindo a remoção de métodos GET e OPTIONS, e definindo AllowCredentials para false.
+            </div>
+            <li onclick="toggleDetails('v1_2_0')">[1.2.0] - 2024-04-29</li>
+            <div id="v1_2_0" class="details">
+                Adicionado: Middleware de segurança para bloquear requisições suspeitas, incluindo uma função para verificar URLs maliciosas.<br>
+                Adicionado: Configuração de Proxies Confiáveis para definir IPs do Cloudflare, melhorando a segurança e reconhecimento dos IPs dos visitantes.
+            </div>
+            <li onclick="toggleDetails('v1_1_0')">[1.1.0] - 2024-04-27</li>
+            <div id="v1_1_0" class="details">
+                Modificado: Atualização no tratamento de eventos Steam para melhorar a estabilidade da conexão.<br>
+                Adicionado: Middleware de CORS para permitir requisições de domínios específicos, ajustando permissões e métodos permitidos.
+            </div>
+            <li onclick="toggleDetails('v1_0_0')">[1.0.0] - 2024-04-13</li>
+            <div id="v1_0_0" class="details">
+                Adicionado: Estrutura inicial do servidor com Gin, incluindo funções básicas para o cliente Steam e Dota 2.<br>
+                Adicionado: Rotas iniciais para funcionalidades básicas de lobby e interação com o jogador.
+            </div>
+        </ul>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('button').addEventListener('click', fetchMatchDetails);
+        });
+
+        function toggleDetails(id) {
+            var element = document.getElementById(id);
+            element.style.display = element.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function fetchMatchDetails() {
+            var matchId = document.getElementById('matchIdInput').value;
+            if (!matchId) {
+                alert('Por favor, insira um ID de partida');
+                return;
+            }
+            fetch(`https://api.opendota.com/api/matches/${matchId}`)
+                .then(response => response.json())
+                .then(data => displayData(data))
+                .catch(error => {
+                    console.error('Erro ao buscar dados:', error);
+                    document.getElementById('result').innerHTML = 'Falha ao carregar dados';
+                });
+        }
+
+        function displayData(data) {
+            const resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = '<h2><i class="fas fa-info-circle icon"></i>Detalhes da Partida</h2>';
+            resultContainer.innerHTML += `<p><i class="fas fa-fingerprint icon"></i>Match ID: ${data.match_id}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-hourglass-start icon"></i>Duração: ${data.duration} segundos</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-swords icon"></i>Placar Radiant: ${data.radiant_score}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-swords icon"></i>Placar Dire: ${data.dire_score}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-trophy icon"></i>Resultado Radiant Venceu: ${data.radiant_win ? 'Sim' : 'Não'}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-tint icon"></i>Tempo do Primeiro Sangue: ${data.first_blood_time} segundos</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-gamepad icon"></i>Modo de Jogo: ${data.game_mode}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-users icon"></i>Lobby: ${data.lobby_type}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-clock icon"></i>Início da partida: ${new Date(data.start_time * 1000).toLocaleString()}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-flag icon"></i>ID da Liga: ${data.leagueid}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-server icon"></i>Cluster: ${data.cluster}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-download icon"></i>URL do Replay: <a href="${data.replay_url}" target="_blank">Download Replay</a></p>`;
+
+            if (data.players && data.players.length > 0) {
+                resultContainer.innerHTML += '<h3><i class="fas fa-user-friends icon"></i>Jogadores</h3>';
+                data.players.forEach(player => {
+                    resultContainer.innerHTML += `<div style="margin-bottom: 10px;">`;
+                    resultContainer.innerHTML += `<strong><i class="fas fa-user icon"></i>Jogador ${player.player_slot}:</strong> <br/>`;
+                    resultContainer.innerHTML += `<i class="fas fa-mask icon"></i>Herói: ${player.hero_id}, <i class="fas fa-skull-crossbones icon"></i>Kills: ${player.kills}, <i class="fas fa-heart-broken icon"></i>Deaths: ${player.deaths}, <i class="fas fa-hands-helping icon"></i>Assists: ${player.assists}<br/>`;
+                    resultContainer.innerHTML += `<i class="fas fa-coins icon"></i>Last hits: ${player.last_hits}, <i class="fas fa-ban icon"></i>Denies: ${player.denies}, <i class="fas fa-gold icon"></i>GPM: ${player.gold_per_min}, <i class="fas fa-chart-line icon"></i>XPM: ${player.xp_per_min}<br/>`;
+                    resultContainer.innerHTML += `<i class="fas fa-bomb icon"></i>Dano ao Herói: ${player.hero_damage}, <i class="fas fa-building icon"></i>Dano à Torre: ${player.tower_damage}, <i class="fas fa-syringe icon"></i>Cura de Herói: ${player.hero_healing}<br/>`;
+                    resultContainer.innerHTML += `<i class="fas fa-chart-bar icon"></i>Nível: ${player.level}, <i class="fas fa-wallet icon"></i>Net Worth: ${player.net_worth}<br/>`;
+                    resultContainer.innerHTML += `<i class="fas fa-door-open icon"></i>Status de Abandono: ${player.leaver_status === 0 ? 'Não abandonou' : 'Abandonou'}`;
+                    resultContainer.innerHTML += '</div>';
+                });
+            }
+
+            resultContainer.innerHTML += '<h3><i class="fas fa-gavel icon"></i>Eventos do Jogo</h3>';
+            resultContainer.innerHTML += `<p><i class="fas fa-tower-broadcast icon"></i>Torre status Radiant: ${data.tower_status_radiant}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-tower-broadcast icon"></i>Torre status Dire: ${data.tower_status_dire}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-fort-awesome icon"></i>Status das Barracas Radiant: ${data.barracks_status_radiant}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-fort-awesome icon"></i>Status das Barracas Dire: ${data.barracks_status_dire}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-thumbs-up icon"></i>Votos positivos: ${data.positive_votes}</p>`;
+            resultContainer.innerHTML += `<p><i class="fas fa-thumbs-down icon"></i>Votos negativos: ${data.negative_votes}</p>`;
+
+            resultContainer.innerHTML += '<h4><i class="fas fa-hammer icon"></i>Bans e Picks</h4>';
+            if (data.picks_bans) {
+                data.picks_bans.forEach(pb => {
+                    resultContainer.innerHTML += `<div><i class="fas ${pb.is_pick ? 'fa-check' : 'fa-times'} icon"></i> ${pb.is_pick ? 'Pick' : 'Ban'}: Herói ${pb.hero_id} pela equipe ${pb.team === 0 ? 'Radiant' : 'Dire'}</div>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

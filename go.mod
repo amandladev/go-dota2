@@ -1,16 +1,20 @@
 module github.com/paralin/go-dota2
 
+
 go 1.24
+
 
 require (
 	github.com/fatih/camelcase v1.0.0
 	github.com/golang/protobuf v1.5.4
+
 	github.com/paralin/go-steam v0.0.0-20250502043548-f167ff28a93a
 	github.com/pkg/errors v0.9.1
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli/v2 v2.27.6
 	google.golang.org/protobuf v1.36.6
+
 )
 
 require (
